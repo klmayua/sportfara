@@ -1,6 +1,3 @@
 {
-  "buildCommand": "npm --prefix sportfara-ui run build",
-  "outputDirectory": "sportfara-ui/.next",
-  "installCommand": "npm --prefix sportfara-ui install",
   "framework": "nextjs"
 }
