@@ -1,0 +1,597 @@
+# ============================================================
+# SPORTFARA™ — UI/UX SCAFFOLD BUILD SPEC
+# Claude Code reads CLAUDE.md first (skill + context loaded there)
+# This file contains the pure build instructions only.
+# Version: 2.0 | June 2026
+# ============================================================
+
+# ============================================================
+# PHASE 1 — PROJECT INITIALISATION
+# ============================================================
+
+phase_1_init:
+
+  - step: create_nextjs_project
+    command: >
+      npx create-next-app@latest sportfara-ui
+      --typescript --tailwind --eslint --app
+      --src-dir --import-alias "@/*"
+
+  - step: install_dependencies
+    production:
+      - framer-motion
+      - lucide-react
+      - next-pwa
+      - next-intl
+      - clsx
+      - tailwind-merge
+      - "@radix-ui/react-dialog"
+      - "@radix-ui/react-tabs"
+      - "@radix-ui/react-dropdown-menu"
+      - "@radix-ui/react-switch"
+      - "@radix-ui/react-avatar"
+      - recharts
+      - react-hook-form
+      - zod
+      - "@tanstack/react-query"
+    development:
+      - prettier
+      - "@typescript-eslint/eslint-plugin"
+      - autoprefixer
+
+  - step: configure_tailwind
+    file: sportfara-ui/tailwind.config.ts
+    instruction: >
+      Generate the complete tailwind.config.ts using every design
+      token defined in CLAUDE.md. Include all custom colours,
+      glassmorphism utilities, animation keyframes, shadow tokens,
+      font families, and Tailwind plugins
+      (@tailwindcss/forms, @tailwindcss/typography, @tailwindcss/aspect-ratio).
+      This file is the single source of truth for all visual decisions.
+
+  - step: configure_globals_css
+    file: sportfara-ui/src/styles/globals.css
+    instruction: >
+      Write global CSS including: shimmer keyframe animation,
+      glass effect utility classes, custom scrollbar styling
+      (dark themed), font-face declarations for Inter and
+      JetBrains Mono, base resets, and safe-area padding
+      utilities for iOS PWA.
+
+  - step: configure_pwa
+    file: sportfara-ui/next.config.ts
+    pwa_manifest:
+      name: SPORTFARA
+      short_name: SPORTFARA
+      description: "Where Sports Begin — African Sports Intelligence"
+      theme_color: "#262938"
+      background_color: "#262938"
+      display: standalone
+      start_url: "/"
+      icons:
+        - src: "/icons/icon-192.png"
+          sizes: "192x192"
+          type: "image/png"
+        - src: "/icons/icon-512.png"
+          sizes: "512x512"
+          type: "image/png"
+
+  - step: configure_i18n
+    files:
+      - sportfara-ui/src/messages/en.json
+      - sportfara-ui/src/messages/fr.json
+    instruction: >
+      Populate both locale files with all user-facing strings
+      for these namespaces: nav, feed, match, betting, creator,
+      dashboard, auth, paywall, common, errors, comingSoon.
+      EN and FR are equals. Every key present in en.json
+      must exist in fr.json. No missing translations.
+      Use real SPORTFARA copy — not placeholder text.
+
+# ============================================================
+# PHASE 2 — COMPLETE FOLDER + FILE STRUCTURE
+# ============================================================
+
+phase_2_structure:
+  instruction: >
+    Create every file and folder listed below.
+    MVP files: fully built components with real code.
+    STUB files: typed file that imports and returns ComingSoon.
+    CONFIG files: configuration with correct content.
+    No file left empty. No file left as a comment.
+
+  app_router:
+    root: sportfara-ui/src/app/[locale]/
+    files:
+      - path: page.tsx
+        status: MVP
+        description: Intelligence Feed — Surface 1
+
+      - path: layout.tsx
+        status: MVP
+        description: Root layout — GlassNav + BottomNav + PageWrapper
+
+      - path: loading.tsx
+        status: MVP
+        description: Root skeleton loader
+
+      - path: not-found.tsx
+        status: MVP
+        description: On-brand 404 page
+
+      - path: auth/login/page.tsx
+        status: MVP
+      - path: auth/register/page.tsx
+        status: MVP
+      - path: auth/verify/page.tsx
+        status: MVP
+      - path: auth/forgot-password/page.tsx
+        status: MVP
+
+      - path: dashboard/page.tsx
+        status: MVP
+        description: Bettor/Analyst Dashboard — Surface 2
+      - path: dashboard/loading.tsx
+        status: MVP
+
+      - path: creator/page.tsx
+        status: MVP
+        description: Creator Hub — Surface 3
+      - path: creator/new/page.tsx
+        status: MVP
+      - path: creator/analytics/page.tsx
+        status: MVP
+      - path: creator/payouts/page.tsx
+        status: MVP
+
+      - path: subscribe/page.tsx
+        status: MVP
+      - path: subscribe/success/page.tsx
+        status: MVP
+      - path: subscribe/cancel/page.tsx
+        status: MVP
+
+      - path: settings/page.tsx
+        status: MVP
+      - path: settings/subscription/page.tsx
+        status: MVP
+
+      - path: matches/page.tsx
+        status: STUB
+      - path: matches/[matchId]/page.tsx
+        status: STUB
+
+      - path: betting/page.tsx
+        status: STUB
+      - path: betting/models/page.tsx
+        status: STUB
+      - path: betting/tracker/page.tsx
+        status: STUB
+
+      - path: scouting/page.tsx
+        status: STUB
+      - path: scouting/players/[id]/page.tsx
+        status: STUB
+      - path: scouting/discover/page.tsx
+        status: STUB
+
+      - path: community/page.tsx
+        status: STUB
+      - path: community/[forumId]/page.tsx
+        status: STUB
+
+      - path: live/page.tsx
+        status: STUB
+      - path: live/[roomId]/page.tsx
+        status: STUB
+
+      - path: enterprise/page.tsx
+        status: STUB
+
+  components:
+    root: sportfara-ui/src/components/
+
+    layout:
+      - GlassNav.tsx           # MVP — fixed top nav, glass, locked items dimmed
+      - BottomNav.tsx          # MVP — mobile only, 5 items, locked at 40% opacity
+      - Sidebar.tsx            # MVP — desktop only, lg+ breakpoint
+      - PageWrapper.tsx        # MVP — Framer Motion page transitions
+      - PageShell.tsx          # MVP — standard page grid layout
+      - ComingSoon.tsx         # MVP — on-brand stub for all dormant routes
+
+    ui:
+      - Button.tsx             # MVP — primary/secondary/ghost/glass/green variants
+      - Card.tsx               # MVP — standard/glass/premium/verified/match variants
+      - Badge.tsx              # MVP — T1-T4 source tiers, premium, live, verified
+      - Input.tsx              # MVP — text/search/glass variants
+      - Modal.tsx              # MVP — glass modal + bottom sheet (mobile)
+      - Tabs.tsx               # MVP — Radix accessible tabs
+      - Skeleton.tsx           # MVP — card, text, table skeleton variants
+      - Toast.tsx              # MVP — success/error/info with slide-in animation
+      - Spinner.tsx            # MVP — orange spinner
+      - Avatar.tsx             # MVP — Radix avatar with fallback initials
+      - Dropdown.tsx           # MVP — Radix dropdown menu
+      - Switch.tsx             # MVP — Radix toggle switch
+      - ProgressBar.tsx        # MVP — animated probability bars
+      - Divider.tsx            # MVP — section dividers
+      - EmptyState.tsx         # MVP — empty state with icon + CTA
+      - ErrorState.tsx         # MVP — error state with retry button
+
+    intelligence:
+      - MatchBriefCard.tsx     # MVP — hero component, full spec below
+      - ProbabilityDisplay.tsx # MVP — 3 animated bars with explainability
+      - OddsRow.tsx            # MVP — single bookmaker odds row
+      - OddsTable.tsx          # MVP — multi-bookmaker comparison, best line highlight
+      - SourceBadge.tsx        # MVP — T1/T2/T3/T4 pill badge, always visible
+      - MatchContext.tsx       # MVP — form, H2H, injuries context block
+      - LanguageToggle.tsx     # MVP — EN/FR two-state toggle, persists to localStorage
+      - BriefingHeader.tsx     # MVP — date + edition + league filter
+      - PaywallGate.tsx        # MVP — hard gate after article 2, upgrade CTA
+      - FreePreviewBanner.tsx  # MVP — "X of 3 free briefings used" banner
+
+    dashboard:
+      - TrackRecordWidget.tsx  # MVP — immutable pick record, Recharts P&L chart
+      - BriefingHistory.tsx    # MVP — last 30 briefings scrollable list
+      - BestLineHighlight.tsx  # MVP — best odds line with green highlight
+      - PredictionCard.tsx     # MVP — single model pick with reasoning
+      - StatSummaryCard.tsx    # MVP — metric card (value + change + icon)
+      - PickModelPanel.tsx     # STUB — v2
+      - BankrollTracker.tsx    # STUB — v2
+      - AlertsPanel.tsx        # STUB — v2
+
+    creator:
+      - CreatorStatCard.tsx    # MVP — revenue/subs/views/conversion grid
+      - ContentPublisher.tsx   # MVP — full article editor with paywall selector
+      - PaywallSelector.tsx    # MVP — Free/Premium/Pro gate toggle
+      - SubscriberCount.tsx    # MVP — count + growth sparkline
+      - EarningsDisplay.tsx    # MVP — monthly earnings breakdown
+      - PayoutStatus.tsx       # MVP — Stripe/Paystack payout status + history
+      - ContentTable.tsx       # MVP — article performance table
+      - AudienceMap.tsx        # STUB — v2
+      - SponsorshipPanel.tsx   # STUB — v3
+
+    auth:
+      - LoginForm.tsx          # MVP
+      - RegisterForm.tsx       # MVP
+      - OAuthButtons.tsx       # MVP — Google OAuth
+      - VerifyEmail.tsx        # MVP
+      - ForgotPassword.tsx     # MVP
+      - AuthWrapper.tsx        # MVP — full-page auth layout
+
+    paywall:
+      - UpgradeModal.tsx       # MVP — glass modal, upgrade prompt
+      - PricingCard.tsx        # MVP — single tier card
+      - PricingTable.tsx       # MVP — Free/Premium/Pro comparison
+      - SuccessScreen.tsx      # MVP — post-payment confirmation
+
+    match:
+      - LiveScoreCard.tsx      # STUB — v2
+      - MatchTimeline.tsx      # STUB — v2
+      - LineupDisplay.tsx      # STUB — v2
+      - HeatmapPanel.tsx       # STUB — v3
+
+    scouting:
+      - PlayerCard.tsx         # STUB — v3
+      - ScoutingReport.tsx     # STUB — v3
+      - PlayerSearch.tsx       # STUB — v3
+      - WatchlistPanel.tsx     # STUB — v3
+
+    community:
+      - ForumThread.tsx        # STUB — v2
+      - CommentBox.tsx         # STUB — v2
+      - ReputationBadge.tsx    # STUB — v2
+      - LiveRoom.tsx           # STUB — v3
+
+  lib:
+    hooks:
+      - useTheme.ts            # MVP
+      - useLanguage.ts         # MVP
+      - usePaywall.ts          # MVP
+      - useAuth.ts             # MVP
+      - useSubscription.ts     # MVP
+      - useGlassmorphism.ts    # MVP
+      - useCreatorStats.ts     # MVP
+      - useLiveScores.ts       # STUB — v2
+      - useOdds.ts             # STUB — v2
+
+    utils:
+      - cn.ts                  # MVP — clsx + tailwind-merge
+      - formatDate.ts          # MVP — EN/FR aware date formatting
+      - formatOdds.ts          # MVP — decimal and fractional odds
+      - formatCurrency.ts      # MVP — USD/KES/NGN/XOF
+      - sourceTier.ts          # MVP — tier label + colour map
+      - featureFlags.ts        # MVP — on/off switches for all modules
+
+    constants:
+      - routes.ts              # MVP — all routes as typed constants
+      - tiers.ts               # MVP — subscription tier definitions
+      - markets.ts             # MVP — supported leagues + markets
+      - bookmakers.ts          # MVP — bookmaker names, logos, colour map
+
+    types:
+      - user.types.ts          # MVP
+      - content.types.ts       # MVP
+      - match.types.ts         # MVP
+      - creator.types.ts       # MVP
+      - api.types.ts           # MVP
+
+# ============================================================
+# PHASE 3 — COMPONENT BUILD SPECS (MVP ONLY)
+# ============================================================
+
+phase_3_component_specs:
+  instruction: >
+    Build every MVP component to this exact spec.
+    Apply the ui-ux-pro-max skill for all visual decisions.
+    Use the SPORTFARA design tokens from CLAUDE.md.
+    Every component: TypeScript, fully typed props,
+    Tailwind only (no inline style except where unavoidable),
+    accessible (ARIA labels, keyboard nav, focus rings),
+    responsive (375px → 1280px), Framer Motion where specified.
+
+  MatchBriefCard:
+    props: "{ match: MatchType, index: number, userTier: 'free' | 'premium' | 'pro' }"
+    layout: >
+      Glass card, premium-orange left border (border-l-4).
+      Row 1: League badge (left) + match date/time (right, text-secondary).
+      Row 2: Home team vs Away team — font-bold text-xl, team flags if available.
+      Row 3: ProbabilityDisplay component (3 animated bars).
+      Row 4: Explainability — "Why: [reason]" — text-sm text-secondary italic.
+      Row 5: OddsTable (3 bookmakers, best line in trust-green).
+      Row 6: SourceBadge (bottom right).
+      Free tier gate: cards index 2+ get PaywallGate overlay (blur + CTA).
+    animation: "fade-in, staggered by index * 0.1s delay"
+
+  GlassNav:
+    layout: >
+      fixed top-0 z-50, full width.
+      bg-primary-dark/80 backdrop-blur-xl border-b border-white/10.
+      Left: Logo SVG + "SPORTFARA" wordmark (font-bold text-xl white).
+      Centre (hidden below md): NavLinks array mapped from routes.ts.
+        Active link: text-premium-orange, bottom border premium-orange.
+        Locked link: opacity-40, cursor-not-allowed, lock icon (14px) inline.
+      Right: LanguageToggle + Search icon button + Bell icon button + Avatar.
+        Unauthenticated: "Sign in" ghost button + "Get Premium" orange button.
+    animation: "slideDown on mount, 0.3s ease-out"
+
+  BottomNav:
+    layout: >
+      fixed bottom-0, md:hidden, full width.
+      bg-surface-dark/90 backdrop-blur-xl border-t border-white/10.
+      Safe area padding: padding-bottom env(safe-area-inset-bottom).
+      5 items: Home / Matches / Betting / Profile / Creator.
+      Active: icon + label in premium-orange.
+      Locked (Matches, Betting): opacity-40, no click handler, small lock overlay.
+      Creator tab: only renders if user.role === 'creator'.
+
+  PaywallGate:
+    layout: >
+      Full-width card. No blur. Hard replacement — card content hidden, gate shown.
+      Glass card with glow-orange shadow.
+      Lock icon (32px, premium-orange) centred top.
+      H2: "You've read your 3 free briefings this week."
+      P: "Upgrade to Premium for unlimited daily intelligence — EN + FR."
+      Button primary: "Upgrade — $10/month" → /subscribe.
+      Button ghost: "See all plans" → /subscribe.
+      Small text: "Cancel anytime. No commitment." text-tertiary text-xs.
+    animation: "scale-up on mount"
+
+  ContentPublisher:
+    layout: >
+      Full-width form. No card wrapper — flows in page.
+      Title: large input, font-bold text-2xl, placeholder "Article title...".
+      Language toggle: EN | FR | Both — determines which body fields show.
+      Body EN: textarea, min-height 300px, markdown-aware (monospace).
+      Body FR: same, only visible if FR or Both selected.
+      Paywall selector: 3 pill buttons — Free / Premium / Pro.
+        Selected: premium-orange bg. Unselected: ghost border.
+      Schedule row: "Publish now" toggle (default on) vs datetime picker.
+      Footer bar: word count + read time (live) left. "Save draft" ghost + "Publish" orange right.
+
+  TrackRecordWidget:
+    layout: >
+      trust-green border-l-4 card.
+      Header: Avatar (40px) + Creator name (font-bold) + "Verified Analyst" green badge.
+      Stats row (3 cols): Lifetime Win % | Last 30d ROI | Total Picks.
+        Numbers: font-extrabold text-2xl premium-orange.
+        Labels: text-xs text-secondary uppercase.
+      Recharts LineChart: unit P&L last 90 days.
+        Line: premium-orange. Area fill: orange/10. Grid: border-subtle.
+        X axis: date labels. Y axis: +/- units.
+      Footer: "Track record is immutable and publicly verifiable." — text-xs text-tertiary italic.
+
+  PricingTable:
+    layout: >
+      3-column grid (stacks to 1 col on mobile).
+      Free card: standard glass card.
+      Premium card: featured, 2px border-premium-orange, "Most popular" badge top.
+      Pro card: standard glass card.
+      Each card: tier name (text-xl bold) + price (text-4xl extrabold premium-orange) + period (/month text-secondary).
+      Feature list: CheckIcon (trust-green) for included, dash (text-tertiary) for excluded.
+      CTA button per card.
+      Annual toggle above table: "Monthly / Annual (save 33%)" — switches all prices.
+      Footer: "Local currency available at checkout. Cancel anytime."
+
+# ============================================================
+# PHASE 4 — ASSEMBLE THE THREE MVP SURFACES
+# ============================================================
+
+phase_4_surfaces:
+
+  surface_1_intelligence_feed:
+    file: sportfara-ui/src/app/[locale]/page.tsx
+    instruction: >
+      Assemble the complete Intelligence Feed page.
+      Import and compose all intelligence/ components.
+      Use the seed data below for the 5 match cards.
+      Free users see cards 1-2 fully. Card 3+ shows PaywallGate.
+      FreePreviewBanner shows below card 2.
+      LanguageToggle switches all content between EN and FR.
+      Framer Motion stagger on card entry.
+    seed_data:
+      - match: "Enyimba FC vs Rivers United"
+        league: "Nigeria Premier League"
+        league_fr: "Championnat Premier du Nigeria"
+        home_win: 45
+        draw: 28
+        away_win: 27
+        best_market: "Home Win"
+        best_market_fr: "Victoire à domicile"
+        explanation_en: "Enyimba unbeaten at home in 10 games. Rivers United missing top scorer."
+        explanation_fr: "Enyimba invaincu à domicile en 10 matches. Rivers United sans son meilleur buteur."
+        source_tier: T2
+        odds: { bet9ja: [2.10, 3.20, 3.80], betika: [2.05, 3.30, 3.90], "1xbet": [2.15, 3.25, 3.75] }
+
+      - match: "Gor Mahia vs AFC Leopards"
+        league: "Football Kenya Federation Premier League"
+        league_fr: "Premier League du Kenya"
+        home_win: 52
+        draw: 25
+        away_win: 23
+        best_market: "Over 1.5 Goals"
+        best_market_fr: "Plus de 1.5 buts"
+        explanation_en: "Derby averages 3.1 goals. Both teams top-3 in league scoring."
+        explanation_fr: "Derby avec 3,1 buts en moyenne. Les deux équipes dans le top 3 des buteurs."
+        source_tier: T1
+        odds: { sportpesa: [1.65, 3.40, 4.50], betika: [1.70, 3.35, 4.40], "22bet": [1.68, 3.38, 4.45] }
+
+      - match: "Mamelodi Sundowns vs Kaizer Chiefs"
+        league: "DStv Premiership"
+        league_fr: "Premiership DStv"
+        home_win: 61
+        draw: 22
+        away_win: 17
+        best_market: "Home Win"
+        best_market_fr: "Victoire à domicile"
+        explanation_en: "Sundowns 12-game unbeaten run. Chiefs W2 L6 away last 8 games."
+        explanation_fr: "Sundowns invaincu depuis 12 matchs. Chiefs: 2V 6D en déplacement."
+        source_tier: T1
+        odds: { hollywoodbets: [1.45, 4.00, 6.50], betway: [1.50, 3.90, 6.00], supabets: [1.48, 3.95, 6.25] }
+
+      - match: "Wydad AC vs Raja Casablanca"
+        league: "Botola Pro"
+        league_fr: "Botola Pro (Maroc)"
+        home_win: 38
+        draw: 34
+        away_win: 28
+        best_market: "Draw"
+        best_market_fr: "Match nul"
+        explanation_en: "Classic derby. Last 6 meetings: 4 draws. High pressing, low conversion."
+        explanation_fr: "Classique. 4 nuls sur les 6 dernières confrontations. Pression haute, faible efficacité."
+        source_tier: T3
+        odds: { "1xbet": [2.40, 3.10, 2.90], betclic: [2.35, 3.15, 2.95], unibet: [2.38, 3.12, 2.92] }
+
+      - match: "ASEC Mimosas vs Africa Sports"
+        league: "Ligue 1 Côte d'Ivoire"
+        league_fr: "Ligue 1 Côte d'Ivoire"
+        home_win: 55
+        draw: 24
+        away_win: 21
+        best_market: "Home Win & Over 1.5"
+        best_market_fr: "Victoire domicile & Plus 1.5 buts"
+        explanation_en: "ASEC lead scorers in league. Africa Sports: W1 D2 L5 away this season."
+        explanation_fr: "ASEC meilleure attaque du championnat. Africa Sports: 1V 2N 5D en extérieur."
+        source_tier: T2
+        odds: { betclic: [1.85, 3.40, 4.20], "1xbet": [1.90, 3.35, 4.10], paripesa: [1.88, 3.38, 4.15] }
+
+  surface_2_bettor_dashboard:
+    file: sportfara-ui/src/app/[locale]/dashboard/page.tsx
+    instruction: >
+      Premium-gated page. Redirect to /subscribe if user is free tier.
+      Header: "Dashboard" + user name + subscription badge.
+      Top row: 4 x StatSummaryCard with mocked values.
+      TrackRecordWidget: mocked analyst "James Adeyemi" with 58% win rate,
+        +12.3 units last 90 days, 147 total picks.
+      OddsTable: show all 5 seed matches with full odds comparison.
+      BriefingHistory: list of last 7 briefings with date + top pick + outcome (won/pending).
+      Sidebar (desktop): "Featured Analysts" — 3 creator cards to follow.
+
+  surface_3_creator_dashboard:
+    file: sportfara-ui/src/app/[locale]/creator/page.tsx
+    instruction: >
+      Creator-role-gated page. Redirect to / if user is not creator.
+      Header: "Welcome back, [name]" + "Founding Creator" orange badge.
+      Stats grid: $1,247 revenue / 847 subscribers / 24.5K views / 4.2% conversion.
+        All with realistic change percentages (+12%, +8%, +23%, +0.5%).
+      ContentPublisher: above the fold, prominent.
+      ContentTable: 5 sample articles with views, conversions, revenue per article.
+        Use real SPORTFARA-style article titles (match analysis, transfer intel etc.).
+      EarningsDisplay: $1,247 this month. Next payout: July 15. Status: On track.
+      PayoutStatus: Last payout $980 on June 15. Method: Paystack. Status: Paid.
+
+# ============================================================
+# PHASE 5 — STUB ALL DORMANT ROUTES
+# ============================================================
+
+phase_5_stubs:
+  instruction: >
+    For every STUB file in Phase 2, write this exact pattern:
+    Import ComingSoon from @/components/layout/ComingSoon.
+    Export a default function that returns <ComingSoon feature="[Feature Name]" />.
+    The ComingSoon component accepts a feature prop and says
+    "[Feature Name] is coming soon." with a waitlist email capture.
+    No 404s. No broken routes. Everything is reachable.
+
+# ============================================================
+# PHASE 6 — FEATURE FLAGS
+# ============================================================
+
+phase_6_feature_flags:
+  file: sportfara-ui/src/lib/constants/featureFlags.ts
+  instruction: >
+    Write a typed const object FLAGS with boolean values.
+    Export a helper: isEnabled(flag: keyof typeof FLAGS): boolean.
+    Every locked nav item, route guard, and feature entry point
+    calls isEnabled() before rendering. Flipping a flag to true
+    is the only code change needed to activate any feature.
+  flags:
+    INTELLIGENCE_FEED: true
+    BETTOR_DASHBOARD: true
+    CREATOR_DASHBOARD: true
+    AUTH: true
+    SUBSCRIPTIONS: true
+    MATCH_CENTER: false
+    BETTING_MODELS: false
+    COMMUNITY_FORUMS: false
+    LIVE_ROOMS: false
+    SCOUTING_DATABASE: false
+    SCOUTING_MARKETPLACE: false
+    ENTERPRISE_API: false
+    AI_COPILOT: false
+
+# ============================================================
+# PHASE 7 — QUALITY AUDIT
+# ============================================================
+
+phase_7_audit:
+  run_after: all phases complete
+  checks:
+    - "npm run build completes with zero TypeScript errors"
+    - "npm run lint passes with zero errors"
+    - "Every component renders at 375px without horizontal scroll"
+    - "Every component renders at 1280px without layout breaks"
+    - "All focus states visible (focus:ring-2 focus:ring-premium-orange)"
+    - "No hardcoded colours outside tailwind.config.ts"
+    - "No lorem ipsum anywhere — all copy is real SPORTFARA content"
+    - "EN and FR locale files have identical key sets"
+    - "PWA manifest valid — run: npx pwa-asset-generator check"
+    - "All STUB files return ComingSoon, not null or undefined"
+    - "Feature flags file exports isEnabled() helper correctly"
+
+# ============================================================
+# PHASE 8 — COMPLETION REPORT
+# ============================================================
+
+phase_8_output:
+  instruction: >
+    When all phases pass, output a completion report with:
+
+    1. File manifest table: filename | type | status | notes
+    2. Design decisions log: any ambiguity encountered and how resolved
+    3. Dev server command: cd sportfara-ui && npm run dev
+    4. First three things to do next:
+       a. Replace mocked data with real Supabase calls (M1 build phase)
+       b. Add Google OAuth credentials to .env.local
+       c. Add Stripe + Paystack keys to .env.local
+    5. Confirmation that ui-ux-pro-max skill was applied throughout
+
