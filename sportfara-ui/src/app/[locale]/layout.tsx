@@ -5,6 +5,7 @@ import { useLanguage } from "@/lib/hooks/useLanguage";
 import { useAuth } from "@/lib/hooks/useAuth";
 import GlassNav from "@/components/layout/GlassNav";
 import BottomNav from "@/components/layout/BottomNav";
+import TickerBar from "@/components/shell/TickerBar";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
@@ -21,13 +22,19 @@ export default function LocaleLayout({
 
   return (
     <div className={`${inter.variable} font-sans`}>
-      <GlassNav
-        user={user}
-        locale={locale as "en" | "fr"}
-        onLocaleToggle={toggleLocale}
-        onSignOut={signOut}
-      />
-      <div className="pt-16 pb-20 md:pb-0 min-h-dvh">
+      {/* Ticker: fixed top-0, z-60, 32px */}
+      <TickerBar />
+      {/* Nav: fixed top-8 (32px offset), z-50 */}
+      <div style={{ position: "fixed", top: "32px", left: 0, right: 0, zIndex: 50 }}>
+        <GlassNav
+          user={user}
+          locale={locale as "en" | "fr"}
+          onLocaleToggle={toggleLocale}
+          onSignOut={signOut}
+        />
+      </div>
+      {/* Content: pt accounts for ticker (32px) + nav (64px) = 96px */}
+      <div className="pb-20 md:pb-0 min-h-dvh" style={{ paddingTop: "96px" }}>
         {children}
       </div>
       <BottomNav user={user} locale={locale} />

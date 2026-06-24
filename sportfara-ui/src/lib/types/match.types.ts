@@ -25,6 +25,9 @@ export interface MatchType {
   odds: OddsLine[];
   homeFlag?: string;
   awayFlag?: string;
+  edgeScore?: number;
+  status?: "LIVE" | "UPCOMING" | "FT";
+  score?: string;
 }
 
 export interface BriefingEntry {

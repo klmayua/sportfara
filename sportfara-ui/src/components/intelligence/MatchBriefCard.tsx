@@ -93,13 +93,29 @@ export default function MatchBriefCard({ match, index, userTier, locale = "en" }
         locale={locale}
       />
 
-      {/* Row 4: Explainability */}
-      <p className="text-sm text-[#9CA3AF] italic leading-relaxed border-l-2 border-white/10 pl-3">
-        <span className="text-[#6B7280] not-italic font-mono text-xs uppercase tracking-wider mr-2">
-          {locale === "fr" ? "Analyse" : "Why"}
-        </span>
-        {explanation}
-      </p>
+      {/* Row 4: Explainability + Edge Score */}
+      <div className="border-l-2 border-white/10 pl-3">
+        <div className="flex items-start justify-between gap-3">
+          <p className="text-sm text-[#9CA3AF] italic leading-relaxed flex-1">
+            <span className="text-[#6B7280] not-italic font-mono text-xs uppercase tracking-wider mr-2">
+              {locale === "fr" ? "Analyse" : "Why"}
+            </span>
+            {explanation}
+          </p>
+          {match.edgeScore !== undefined && (
+            <span
+              className="shrink-0 font-mono text-sm font-bold tabular-nums"
+              style={{
+                color: match.edgeScore >= 7.5 ? "#00C853"
+                     : match.edgeScore >= 5.0 ? "#F59E0B"
+                     : "#6B7280",
+              }}
+            >
+              Edge {match.edgeScore} / 10
+            </span>
+          )}
+        </div>
+      </div>
 
       {/* Row 5: Odds table */}
       <OddsTable odds={match.odds} locale={locale} />

@@ -4,13 +4,38 @@ import { Lock } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils/cn";
 import { ROUTES } from "@/lib/constants/routes";
+import { useModeStore, type ActiveMode } from "@/lib/stores/modeStore";
 
 interface PaywallGateProps {
   locale?: string;
   className?: string;
 }
 
+const GATE_CONTENT: Record<ActiveMode, { headline: string; body: string; cta: string; sub: string }> = {
+  signal: {
+    headline: "Your edge expires here. 3 more match briefings await.",
+    body: "Odds comparison, verified track records, WHY reasoning, and Edge scores for every match today — across every league.",
+    cta: "Get Signal · $5 / month",
+    sub: "Pay with Paystack — Naira, Shilling, Rand, or card",
+  },
+  intel: {
+    headline: "Your briefing desk is one step away.",
+    body: "Unlimited match previews, source-tiered intelligence, exportable data, and the full briefing archive.",
+    cta: "Get Intel · $15 / month",
+    sub: "Used by journalists in 8 African markets",
+  },
+  origin: {
+    headline: "The rest of home is waiting.",
+    body: "Full coverage — African leagues and global tournaments — in English and French, from every corner of the world.",
+    cta: "Get Origin · $12 / month",
+    sub: "Followed by 14,000 Africans abroad",
+  },
+};
+
 export default function PaywallGate({ locale = "en", className }: PaywallGateProps) {
+  const { activeMode } = useModeStore();
+  const content = GATE_CONTENT[activeMode];
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.97 }}
@@ -27,16 +52,8 @@ export default function PaywallGate({ locale = "en", className }: PaywallGatePro
       </div>
 
       <div className="space-y-2">
-        <h2 className="text-lg font-bold text-white">
-          {locale === "fr"
-            ? "Vous avez lu vos 3 bulletins gratuits cette semaine."
-            : "You've read your 3 free briefings this week."}
-        </h2>
-        <p className="text-sm text-[#9CA3AF] max-w-sm">
-          {locale === "fr"
-            ? "Passez Premium pour une intelligence quotidienne illimitée — EN + FR."
-            : "Upgrade to Premium for unlimited daily intelligence — EN + FR."}
-        </p>
+        <h2 className="text-lg font-bold text-white">{content.headline}</h2>
+        <p className="text-sm text-[#9CA3AF] max-w-sm">{content.body}</p>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-3 w-full max-w-xs">
@@ -49,7 +66,7 @@ export default function PaywallGate({ locale = "en", className }: PaywallGatePro
             "focus:outline-none focus:ring-2 focus:ring-premium-orange focus:ring-offset-2 focus:ring-offset-primary-dark"
           )}
         >
-          {locale === "fr" ? "Passer Premium — 10 $/mois" : "Upgrade — $10/month"}
+          {content.cta}
         </Link>
         <Link
           href={`/${locale}${ROUTES.SUBSCRIBE}`}
@@ -64,9 +81,7 @@ export default function PaywallGate({ locale = "en", className }: PaywallGatePro
         </Link>
       </div>
 
-      <p className="text-xs text-[#6B7280]">
-        {locale === "fr" ? "Annulez à tout moment. Sans engagement." : "Cancel anytime. No commitment."}
-      </p>
+      <p className="text-xs text-[#6B7280]">{content.sub}</p>
     </motion.div>
   );
 }
