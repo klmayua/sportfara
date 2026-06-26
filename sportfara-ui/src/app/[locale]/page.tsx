@@ -1,24 +1,14 @@
 "use client";
-import PageWrapper from "@/components/layout/PageWrapper";
-import PageShell from "@/components/layout/PageShell";
-import MatchBriefCard from "@/components/intelligence/MatchBriefCard";
-import { Sidebar, SidebarSection, AnalystCard } from "@/components/layout/Sidebar";
-import AffiliatePanel from "@/components/sidebar/AffiliatePanel";
-import ScoresSidebar from "@/components/sidebar/ScoresSidebar";
-import Masthead from "@/components/shell/Masthead";
-import SectionHeader from "@/components/shell/SectionHeader";
-import BreakingBanner from "@/components/shell/BreakingBanner";
-import CounterBar from "@/components/shell/CounterBar";
-import IntelCard from "@/components/feed/IntelCard";
-import OriginCard from "@/components/feed/OriginCard";
-import TrialSignup from "@/components/conversion/TrialSignup";
+import MastBar from "@/components/shell/MastBar";
+import BodyGrid from "@/components/layout/BodyGrid";
+import LeftColumn from "@/components/layout/LeftColumn";
+import CentreColumn from "@/components/layout/CentreColumn";
+import RightColumn from "@/components/layout/RightColumn";
 import { useLanguage } from "@/lib/hooks/useLanguage";
-import { usePaywall } from "@/lib/hooks/usePaywall";
-import { useModeStore } from "@/lib/stores/modeStore";
-import { useSportStore } from "@/lib/stores/sportStore";
 import type { MatchType } from "@/lib/types/match.types";
 import type { IntelCardData } from "@/components/feed/IntelCard";
 import type { OriginCardData } from "@/components/feed/OriginCard";
+import type { AnalystEntry } from "@/components/sidebar/AnalystPanel";
 
 // ── Seed data ─────────────────────────────────────────────────
 
@@ -127,7 +117,7 @@ const INTEL_CARDS: IntelCardData[] = [
   {
     id: "i1", headline: "NPFL Form Analysis: Why Enyimba's xG advantage is being underpriced",
     author: "James Adeyemi", sourceTier: "T1", readTime: "4 min read",
-    excerpt: "A deep dive into Enyimba's expected goals (xG) figures over the last 10 home fixtures reveals a pattern that bookmakers have consistently ignored. Their xG differential of +1.4 per game is among the highest in the league.",
+    excerpt: "A deep dive into Enyimba's expected goals (xG) figures over the last 10 home fixtures reveals a pattern bookmakers have consistently ignored. Their xG differential of +1.4 per game is among the highest in the league.",
     stats: [{ number: "+1.4", label: "xG diff / game" }, { number: "10/10", label: "Home unbeaten" }, { number: "2.1×", label: "Avg best odds" }],
   },
   {
@@ -194,139 +184,45 @@ const ORIGIN_CARDS: OriginCardData[] = [
   },
 ];
 
-const FEATURED_ANALYSTS = [
+const FEATURED_ANALYSTS: AnalystEntry[] = [
   {
     name: "James Adeyemi", winRate: 58, picks: 147, href: "#",
     signature: "Home form is everything in NPFL right now.",
-    last5: ["W", "W", "L", "W", "D"] as Array<"W"|"L"|"D">,
+    last5: ["W", "W", "L", "W", "D"],
   },
   {
     name: "Aminata Diallo", winRate: 62, picks: 89, href: "#",
     signature: "The draw market in African derbies is consistently underpriced.",
-    last5: ["W", "L", "W", "W", "W"] as Array<"W"|"L"|"D">,
+    last5: ["W", "L", "W", "W", "W"],
   },
   {
     name: "Kwame Mensah", winRate: 55, picks: 203, href: "#",
     signature: "xG tells you who should have won. Odds tell you who the market thought would.",
-    last5: ["W", "D", "L", "W", "W"] as Array<"W"|"L"|"D">,
+    last5: ["W", "D", "L", "W", "W"],
   },
 ];
-
-const SIDEBAR_TITLE: Record<string, string>    = { signal: "Verified analysts",  intel: "Featured analysts", origin: "African voices" };
-const SIDEBAR_TITLE_FR: Record<string, string> = { signal: "Analystes vérifiés", intel: "Analystes vedettes",  origin: "Voix africaines" };
 
 // ── Page ──────────────────────────────────────────────────────
 
 export default function IntelligenceFeedPage() {
   const { locale } = useLanguage();
-  const { freeReadsUsed, limit } = usePaywall("free");
-  void freeReadsUsed; void limit;
-  const { activeMode } = useModeStore();
-  const { activeSport } = useSportStore();
-
   const L = locale as "en" | "fr";
 
-  // Sport filtering helpers
-  function matchesSport(tags?: string[]): boolean {
-    if (activeSport === "all") return true;
-    return tags?.includes(activeSport) ?? false;
-  }
-
-  const filteredSignal = SEED_MATCHES.filter((m) => matchesSport(m.sportTags));
-  const firstCard      = filteredSignal[0] ?? null;
-  const restCards      = filteredSignal.slice(1);
-
-  const sidebarTitle = L === "fr" ? SIDEBAR_TITLE_FR[activeMode] : SIDEBAR_TITLE[activeMode];
-
-  const sidebar = (
-    <Sidebar>
-      <ScoresSidebar />
-      <SidebarSection title={sidebarTitle}>
-        {FEATURED_ANALYSTS.map((a) => (
-          <AnalystCard key={a.name} {...a} />
-        ))}
-      </SidebarSection>
-      <AffiliatePanel />
-    </Sidebar>
-  );
-
-  const emptyMsg = `No ${activeSport === "all" ? "" : activeSport + " "}briefings today — check back later or view all sports.`;
-
   return (
-    <PageWrapper>
-      {/* ── 1-3. Masthead (with sport pills) + Section header + Breaking banner ── */}
-      <Masthead />
-      <SectionHeader />
-      <BreakingBanner />
-
-      {/* ── 4. One free briefing card + 5. TrialSignup ── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
-        {activeMode === "signal" && (
-          firstCard ? (
-            <div className="max-w-2xl mb-6">
-              <MatchBriefCard
-                match={firstCard}
-                index={0}
-                userTier="free"
-                locale={L}
-              />
-            </div>
-          ) : (
-            <p className="text-sm italic text-center py-4 mb-6" style={{ color: "#6B7280" }}>{emptyMsg}</p>
-          )
-        )}
-        {activeMode === "intel" && INTEL_CARDS.length > 0 && (
-          <div className="max-w-2xl mb-6">
-            <IntelCard card={INTEL_CARDS[0]} index={0} />
-          </div>
-        )}
-        {activeMode === "origin" && ORIGIN_CARDS.length > 0 && (
-          <div className="max-w-2xl mb-6">
-            <OriginCard card={ORIGIN_CARDS[0]} index={0} defaultLang={L} />
-          </div>
-        )}
-      </div>
-
-      {/* ── 5. TrialSignup (replaces ModeSelector + UVPZone) ── */}
-      <TrialSignup locale={locale} />
-
-      {/* ── 6. CounterBar ── */}
-      <CounterBar locale={locale} />
-
-      {/* ── 7. Body grid — remaining cards + scores sidebar ── */}
-      <PageShell sidebar={sidebar}>
-        <div className="space-y-4">
-          {activeMode === "signal" && (
-            restCards.length > 0
-              ? restCards.map((match, i) => (
-                  <MatchBriefCard
-                    key={match.id}
-                    match={match}
-                    index={i + 1}
-                    userTier="free"
-                    locale={L}
-                  />
-                ))
-              : <p className="text-sm italic text-center py-8" style={{ color: "#6B7280" }}>{emptyMsg}</p>
-          )}
-
-          {activeMode === "intel" && (
-            INTEL_CARDS.slice(1).length > 0
-              ? INTEL_CARDS.slice(1).map((card, i) => (
-                  <IntelCard key={card.id} card={card} index={i + 1} />
-                ))
-              : <p className="text-sm italic text-center py-8" style={{ color: "#6B7280" }}>No intel briefings today.</p>
-          )}
-
-          {activeMode === "origin" && (
-            ORIGIN_CARDS.slice(1).length > 0
-              ? ORIGIN_CARDS.slice(1).map((card, i) => (
-                  <OriginCard key={card.id} card={card} index={i + 1} defaultLang={L} />
-                ))
-              : <p className="text-sm italic text-center py-8" style={{ color: "#6B7280" }}>No origin stories today.</p>
-          )}
-        </div>
-      </PageShell>
-    </PageWrapper>
+    <>
+      <MastBar />
+      <BodyGrid
+        left={<LeftColumn />}
+        centre={
+          <CentreColumn
+            signalCards={SEED_MATCHES}
+            intelCards={INTEL_CARDS}
+            originCards={ORIGIN_CARDS}
+            locale={L}
+          />
+        }
+        right={<RightColumn analysts={FEATURED_ANALYSTS} />}
+      />
+    </>
   );
 }

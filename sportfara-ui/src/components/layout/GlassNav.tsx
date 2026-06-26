@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Search, Bell, Lock } from "lucide-react";
+import { Search, Bell } from "lucide-react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils/cn";
 import { ROUTES } from "@/lib/constants/routes";
@@ -21,10 +21,6 @@ interface NavLink {
 const NAV_LINKS: NavLink[] = [
   { label: "Feed", labelFr: "Fil d'actu", href: ROUTES.HOME, flag: "INTELLIGENCE_FEED" },
   { label: "Dashboard", labelFr: "Tableau de bord", href: ROUTES.DASHBOARD, flag: "BETTOR_DASHBOARD" },
-  { label: "Matches", labelFr: "Matchs", href: ROUTES.MATCHES, flag: "MATCH_CENTER" },
-  { label: "Betting", labelFr: "Paris", href: ROUTES.BETTING, flag: "BETTING_MODELS" },
-  { label: "Community", labelFr: "Communauté", href: ROUTES.COMMUNITY, flag: "COMMUNITY_FORUMS" },
-  { label: "Enterprise", labelFr: "Entreprise", href: ROUTES.ENTERPRISE, flag: "ENTERPRISE_API" },
 ];
 
 interface GlassNavProps {
@@ -61,32 +57,21 @@ export default function GlassNav({ user, locale = "en", onLocaleToggle, onSignOu
           {/* Centre Nav — md+ */}
           <nav className="hidden md:flex items-center gap-1" aria-label="Main navigation">
             {NAV_LINKS.map((link) => {
-              const enabled = isEnabled(link.flag);
               const isActive = pathname?.includes(link.href) && link.href !== "/";
               const isHome = link.href === "/" && (pathname === "/" || pathname?.endsWith("/"));
 
               return (
                 <Link
                   key={link.href}
-                  href={enabled ? `/${locale}${link.href}` : "#"}
-                  aria-disabled={!enabled}
-                  tabIndex={enabled ? 0 : -1}
+                  href={`/${locale}${link.href}`}
                   className={cn(
-                    "relative px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200",
+                    "relative px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200 cursor-pointer",
                     "focus:outline-none focus:ring-2 focus:ring-premium-orange",
-                    enabled ? "cursor-pointer" : "cursor-not-allowed opacity-40",
-                    (isActive || isHome) && enabled
-                      ? "text-premium-orange"
-                      : enabled
-                      ? "text-[#9CA3AF] hover:text-white"
-                      : "text-[#9CA3AF]"
+                    (isActive || isHome) ? "text-premium-orange" : "text-[#9CA3AF] hover:text-white"
                   )}
                 >
-                  <span className="flex items-center gap-1">
-                    {locale === "fr" ? link.labelFr : link.label}
-                    {!enabled && <Lock className="w-3 h-3 inline" aria-label="locked" />}
-                  </span>
-                  {(isActive || isHome) && enabled && (
+                  {locale === "fr" ? link.labelFr : link.label}
+                  {(isActive || isHome) && (
                     <motion.div
                       layoutId="nav-indicator"
                       className="absolute bottom-0 left-3 right-3 h-0.5 bg-premium-orange rounded-full"
@@ -144,13 +129,13 @@ export default function GlassNav({ user, locale = "en", onLocaleToggle, onSignOu
                 <Link
                   href={`/${locale}${ROUTES.SUBSCRIBE}`}
                   className={cn(
-                    "px-3 py-1.5 rounded-lg text-sm font-semibold",
+                    "px-3 py-1.5 rounded-lg text-sm font-bold",
                     "bg-premium-orange hover:bg-premium-orange-hover text-white",
                     "transition-colors duration-200 cursor-pointer",
                     "focus:outline-none focus:ring-2 focus:ring-premium-orange focus:ring-offset-2 focus:ring-offset-primary-dark"
                   )}
                 >
-                  Get Premium
+                  Start free trial
                 </Link>
               </div>
             )}

@@ -25,18 +25,19 @@ export default function AffiliatePanel() {
   if (activeMode !== "signal") return null;
 
   return (
-    <div className="glass-card p-4 space-y-3">
-      <h3 className="text-xs font-mono font-bold uppercase tracking-wider" style={{ color: "#6B7280" }}>
+    <div style={{ padding: "10px 12px", borderTop: "0.5px solid #374151" }}>
+      <p className="font-mono uppercase" style={{ fontSize: "9px", letterSpacing: "0.08em", color: "#6B7280", marginBottom: "8px" }}>
         Best odds today
-      </h3>
+      </p>
       {BOOKMAKERS.map((bm) => (
         <div
           key={bm.name}
-          className="flex items-center justify-between rounded-lg"
+          className="flex items-center justify-between"
           style={{
             backgroundColor: "#1A1C26",
-            borderRadius: "8px",
-            padding: "8px 10px",
+            borderRadius: "4px",
+            padding: "7px 8px",
+            marginBottom: "5px",
           }}
         >
           <div>
