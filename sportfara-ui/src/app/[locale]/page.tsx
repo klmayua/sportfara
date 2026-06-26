@@ -1,22 +1,26 @@
 "use client";
-import { useState } from "react";
 import PageWrapper from "@/components/layout/PageWrapper";
 import PageShell from "@/components/layout/PageShell";
 import MatchBriefCard from "@/components/intelligence/MatchBriefCard";
 import { Sidebar, SidebarSection, AnalystCard } from "@/components/layout/Sidebar";
 import AffiliatePanel from "@/components/sidebar/AffiliatePanel";
+import ScoresSidebar from "@/components/sidebar/ScoresSidebar";
 import Masthead from "@/components/shell/Masthead";
-import ModeSelector from "@/components/shell/ModeSelector";
-import UVPZone from "@/components/shell/UVPZone";
+import SectionHeader from "@/components/shell/SectionHeader";
+import BreakingBanner from "@/components/shell/BreakingBanner";
 import CounterBar from "@/components/shell/CounterBar";
 import IntelCard from "@/components/feed/IntelCard";
 import OriginCard from "@/components/feed/OriginCard";
+import TrialSignup from "@/components/conversion/TrialSignup";
 import { useLanguage } from "@/lib/hooks/useLanguage";
 import { usePaywall } from "@/lib/hooks/usePaywall";
 import { useModeStore } from "@/lib/stores/modeStore";
+import { useSportStore } from "@/lib/stores/sportStore";
 import type { MatchType } from "@/lib/types/match.types";
 import type { IntelCardData } from "@/components/feed/IntelCard";
 import type { OriginCardData } from "@/components/feed/OriginCard";
+
+// ── Seed data ─────────────────────────────────────────────────
 
 const SEED_MATCHES: MatchType[] = [
   {
@@ -26,11 +30,11 @@ const SEED_MATCHES: MatchType[] = [
     bestMarket: "Home Win", bestMarketFr: "Victoire à domicile",
     explanationEn: "Enyimba unbeaten at home in 10 games. Rivers United missing top scorer.",
     explanationFr: "Enyimba invaincu à domicile en 10 matches. Rivers United sans son meilleur buteur.",
-    sourceTier: "T2", edgeScore: 8.1,
+    sourceTier: "T2", edgeScore: 8.1, sportTags: ["football"],
     odds: [
-      { bookmaker: "Bet9ja", homeWin: 2.10, draw: 3.20, awayWin: 3.80 },
-      { bookmaker: "Betika", homeWin: 2.05, draw: 3.30, awayWin: 3.90 },
-      { bookmaker: "1xBet",  homeWin: 2.15, draw: 3.25, awayWin: 3.75 },
+      { bookmaker: "Bet9ja",  homeWin: 2.10, draw: 3.20, awayWin: 3.80 },
+      { bookmaker: "Betika",  homeWin: 2.05, draw: 3.30, awayWin: 3.90 },
+      { bookmaker: "1xBet",   homeWin: 2.15, draw: 3.25, awayWin: 3.75 },
     ],
   },
   {
@@ -40,7 +44,7 @@ const SEED_MATCHES: MatchType[] = [
     bestMarket: "Over 1.5 Goals", bestMarketFr: "Plus de 1.5 buts",
     explanationEn: "Derby averages 3.1 goals. Both teams top-3 in league scoring.",
     explanationFr: "Derby avec 3,1 buts en moyenne. Les deux équipes dans le top 3 des buteurs.",
-    sourceTier: "T1", edgeScore: 6.5,
+    sourceTier: "T1", edgeScore: 6.5, sportTags: ["football"],
     odds: [
       { bookmaker: "SportPesa", homeWin: 1.65, draw: 3.40, awayWin: 4.50 },
       { bookmaker: "Betika",    homeWin: 1.70, draw: 3.35, awayWin: 4.40 },
@@ -54,7 +58,7 @@ const SEED_MATCHES: MatchType[] = [
     bestMarket: "Home Win", bestMarketFr: "Victoire à domicile",
     explanationEn: "Sundowns 12-game unbeaten run. Chiefs W2 L6 away last 8 games.",
     explanationFr: "Sundowns invaincu depuis 12 matchs. Chiefs: 2V 6D en déplacement.",
-    sourceTier: "T1", edgeScore: 7.9,
+    sourceTier: "T1", edgeScore: 7.9, sportTags: ["football"],
     odds: [
       { bookmaker: "Hollywoodbets", homeWin: 1.45, draw: 4.00, awayWin: 6.50 },
       { bookmaker: "Betway",        homeWin: 1.50, draw: 3.90, awayWin: 6.00 },
@@ -68,7 +72,7 @@ const SEED_MATCHES: MatchType[] = [
     bestMarket: "Draw", bestMarketFr: "Match nul",
     explanationEn: "Classic derby. Last 6 meetings: 4 draws. High pressing, low conversion.",
     explanationFr: "Classique. 4 nuls sur les 6 dernières confrontations.",
-    sourceTier: "T3", edgeScore: 4.8,
+    sourceTier: "T3", edgeScore: 4.8, sportTags: ["football"],
     odds: [
       { bookmaker: "1xBet",   homeWin: 2.40, draw: 3.10, awayWin: 2.90 },
       { bookmaker: "Betclic", homeWin: 2.35, draw: 3.15, awayWin: 2.95 },
@@ -82,141 +86,161 @@ const SEED_MATCHES: MatchType[] = [
     bestMarket: "Home Win & Over 1.5", bestMarketFr: "Victoire domicile & Plus 1.5 buts",
     explanationEn: "ASEC lead scorers in league. Africa Sports: W1 D2 L5 away this season.",
     explanationFr: "ASEC meilleure attaque du championnat. Africa Sports: 1V 2N 5D en extérieur.",
-    sourceTier: "T2", edgeScore: 5.3,
+    sourceTier: "T2", edgeScore: 5.3, sportTags: ["football"],
     odds: [
       { bookmaker: "Betclic",  homeWin: 1.85, draw: 3.40, awayWin: 4.20 },
       { bookmaker: "1xBet",    homeWin: 1.90, draw: 3.35, awayWin: 4.10 },
       { bookmaker: "PariPesa", homeWin: 1.88, draw: 3.38, awayWin: 4.15 },
     ],
   },
+  {
+    id: "m6", homeTeam: "Springboks", awayTeam: "All Blacks",
+    league: "Rugby Championship", leagueFr: "Rugby Championship",
+    kickoff: "2026-06-23T16:00:00Z", homeWin: 58, draw: 5, awayWin: 37,
+    bestMarket: "Home Win", bestMarketFr: "Victoire à domicile",
+    explanationEn: "All Blacks missing Barrett. Springboks edge score moves to 8.5 after squad news.",
+    explanationFr: "All Blacks sans Barrett. Le score d'avantage des Springboks passe à 8,5.",
+    sourceTier: "T1", edgeScore: 8.5, sportTags: ["rugby"],
+    odds: [
+      { bookmaker: "Betway",  homeWin: 1.72, draw: 14.00, awayWin: 2.10 },
+      { bookmaker: "1xBet",   homeWin: 1.75, draw: 13.50, awayWin: 2.05 },
+      { bookmaker: "Unibet",  homeWin: 1.74, draw: 13.00, awayWin: 2.08 },
+    ],
+  },
+  {
+    id: "m7", homeTeam: "Kenya", awayTeam: "Ethiopia",
+    league: "Diamond League — 5000m", leagueFr: "Diamond League — 5000m",
+    kickoff: "2026-06-23T19:30:00Z", homeWin: 44, draw: 0, awayWin: 56,
+    bestMarket: "Kipchoge Wins", bestMarketFr: "Victoire Kipchoge",
+    explanationEn: "Kipchoge confirmed for Diamond League tonight. Personal best at this venue.",
+    explanationFr: "Kipchoge confirmé pour la Diamond League ce soir. Record personnel sur ce site.",
+    sourceTier: "T2", edgeScore: 6.8, sportTags: ["athletics"],
+    odds: [
+      { bookmaker: "Betway",  homeWin: 1.90, draw: 0, awayWin: 1.95 },
+      { bookmaker: "1xBet",   homeWin: 1.88, draw: 0, awayWin: 1.98 },
+      { bookmaker: "Unibet",  homeWin: 1.92, draw: 0, awayWin: 1.93 },
+    ],
+  },
 ];
 
 const INTEL_CARDS: IntelCardData[] = [
   {
-    id: "i1",
-    headline: "NPFL Form Analysis: Why Enyimba's xG advantage is being underpriced",
-    author: "James Adeyemi",
-    sourceTier: "T1",
-    readTime: "4 min read",
-    excerpt: "A deep dive into Enyimba's expected goals (xG) figures over the last 10 home fixtures reveals a pattern that bookmakers have consistently ignored. Their xG differential of +1.4 per game is among the highest in the league, yet odds still reflect pre-season market inertia.",
+    id: "i1", headline: "NPFL Form Analysis: Why Enyimba's xG advantage is being underpriced",
+    author: "James Adeyemi", sourceTier: "T1", readTime: "4 min read",
+    excerpt: "A deep dive into Enyimba's expected goals (xG) figures over the last 10 home fixtures reveals a pattern that bookmakers have consistently ignored. Their xG differential of +1.4 per game is among the highest in the league.",
     stats: [{ number: "+1.4", label: "xG diff / game" }, { number: "10/10", label: "Home unbeaten" }, { number: "2.1×", label: "Avg best odds" }],
   },
   {
-    id: "i2",
-    headline: "KPL Derby Preview: Tactical breakdown of the Nairobi showdown",
-    author: "Aminata Diallo",
-    sourceTier: "T2",
-    readTime: "6 min read",
-    excerpt: "Gor Mahia and AFC Leopards have met 14 times in the last three seasons. The data points to one clear pattern: when the match is played at Nyayo Stadium, over 1.5 goals occurs in 79% of fixtures. This is not a coin flip.",
+    id: "i2", headline: "KPL Derby Preview: Tactical breakdown of the Nairobi showdown",
+    author: "Aminata Diallo", sourceTier: "T2", readTime: "6 min read",
+    excerpt: "Gor Mahia and AFC Leopards have met 14 times in the last three seasons. When played at Nyayo Stadium, over 1.5 goals occurs in 79% of fixtures. This is not a coin flip.",
     stats: [{ number: "79%", label: "O1.5 at Nyayo" }, { number: "3.1", label: "Goals avg" }, { number: "14", label: "Meetings analysed" }],
   },
   {
-    id: "i3",
-    headline: "PSL Power Rankings: Sundowns' invincibility streak in numbers",
-    author: "Kwame Mensah",
-    sourceTier: "T1",
-    readTime: "3 min read",
-    excerpt: "Mamelodi Sundowns have not lost in 12 league games. But the more interesting story is in the underlying data: their pressing intensity (PPDA of 7.2) is the best in the league, and Kaizer Chiefs' away record collapses against top-half sides.",
+    id: "i3", headline: "PSL Power Rankings: Sundowns' invincibility streak in numbers",
+    author: "Kwame Mensah", sourceTier: "T1", readTime: "3 min read",
+    excerpt: "Mamelodi Sundowns have not lost in 12 league games. Their pressing intensity (PPDA 7.2) is the best in the league, and Kaizer Chiefs' away record collapses against top-half sides.",
     stats: [{ number: "12", label: "Unbeaten run" }, { number: "7.2", label: "PPDA (pressing)" }, { number: "17%", label: "Chiefs away W%" }],
   },
   {
-    id: "i4",
-    headline: "Botola Pro Draw Patterns: The Wydad-Raja variable that odds ignore",
-    author: "James Adeyemi",
-    sourceTier: "T3",
-    readTime: "5 min read",
-    excerpt: "Four draws in six meetings might look like parity. But a closer look at the shot conversion rates, referee allocation patterns, and late-game tactical withdrawals reveals why the draw market in this fixture is structurally underpriced.",
-    stats: [{ number: "4/6", label: "Recent draws" }, { number: "3.1×", label: "Draw avg odds" }, { number: "68%", label: "Shots on target <40%" }],
+    id: "i4", headline: "Springboks vs All Blacks: The Barrett variable changes everything",
+    author: "James Adeyemi", sourceTier: "T1", readTime: "5 min read",
+    excerpt: "Beauden Barrett's absence cuts the All Blacks' ball-in-play time by an estimated 22% based on his last 8 starts. The Springboks' edge score moves from 6.2 to 8.5. Markets haven't caught up yet.",
+    stats: [{ number: "8.5", label: "Springboks edge" }, { number: "-22%", label: "ABs ball-in-play" }, { number: "1.72×", label: "Best Spboks odds" }],
   },
   {
-    id: "i5",
-    headline: "Ligue 1 CI: ASEC Mimosas' home dominance — an analytical overview",
-    author: "Aminata Diallo",
-    sourceTier: "T2",
-    readTime: "4 min read",
-    excerpt: "ASEC's scoring rate at home (2.3 goals per game) is the highest in Côte d'Ivoire's top flight. Africa Sports' away defence has conceded in 8 of their last 9 road trips. The combined market of Home Win & Over 1.5 Goals sits at 1.88 — a structural mismatch.",
-    stats: [{ number: "2.3", label: "Goals/game (H)" }, { number: "8/9", label: "Africa Sp conceded away" }, { number: "1.88×", label: "Best market odds" }],
+    id: "i5", headline: "Diamond League 5000m: Kipchoge's confirmed start — what the data says",
+    author: "Aminata Diallo", sourceTier: "T2", readTime: "4 min read",
+    excerpt: "Kipchoge has started three Diamond League 5000m races in the last two seasons. He won all three. His personal best at tonight's venue (13:01) is a full 12 seconds faster than the current field average.",
+    stats: [{ number: "3/3", label: "DL wins this venue" }, { number: "13:01", label: "Kipchoge PB" }, { number: "−12s", label: "vs field average" }],
   },
 ];
 
 const ORIGIN_CARDS: OriginCardData[] = [
   {
-    id: "o1",
-    locationTag: "NPFL · Nigeria",
-    flag: "🇳🇬",
+    id: "o1", locationTag: "NPFL · Nigeria", flag: "🇳🇬",
     headlineEn: "Enyimba FC are building something special — and Abuja is watching",
     headlineFr: "Enyimba FC construit quelque chose de spécial — et Abuja regarde",
-    deckEn: "In a league often defined by chaos and late payments, Enyimba's consistency at home is becoming a story of its own. Ten games unbeaten. A vocal fanbase. And a coach who refuses to use tactics from 2009.",
-    deckFr: "Dans un championnat souvent marqué par le chaos et les retards de paiement, la régularité d'Enyimba à domicile devient une histoire en soi. Dix matches sans défaite. Une base de supporters bruyante. Et un entraîneur qui refuse de jouer 2009.",
+    deckEn: "In a league defined by chaos and late payments, Enyimba's consistency at home is a story of its own. Ten games unbeaten. A vocal fanbase. And a coach who refuses to play 2009.",
+    deckFr: "Dans un championnat marqué par le chaos et les retards de paiement, la régularité d'Enyimba à domicile devient une histoire en soi. Dix matches sans défaite.",
   },
   {
-    id: "o2",
-    locationTag: "KPL · Kenya",
-    flag: "🇰🇪",
+    id: "o2", locationTag: "KPL · Kenya", flag: "🇰🇪",
     headlineEn: "The Nairobi derby is more than football — it is identity",
     headlineFr: "Le derby de Nairobi est plus que du football — c'est une question d'identité",
-    deckEn: "Gor Mahia versus AFC Leopards divides families, neighbourhoods and offices every time it is played. This weekend, 36,000 fans are expected at Nyayo. The city will not be quiet.",
-    deckFr: "Gor Mahia contre AFC Leopards divise les familles, les quartiers et les bureaux à chaque confrontation. Ce week-end, 36 000 supporters sont attendus à Nyayo. La ville ne sera pas calme.",
+    deckEn: "Gor Mahia versus AFC Leopards divides families and offices every time it is played. This weekend, 36,000 fans are expected at Nyayo. The city will not be quiet.",
+    deckFr: "Gor Mahia contre AFC Leopards divise les familles et les bureaux à chaque confrontation. Ce week-end, 36 000 supporters sont attendus à Nyayo.",
   },
   {
-    id: "o3",
-    locationTag: "PSL · South Africa",
-    flag: "🇿🇦",
+    id: "o3", locationTag: "Rugby Championship · South Africa", flag: "🇿🇦",
+    headlineEn: "Springboks vs All Blacks — the rivalry that stops two nations",
+    headlineFr: "Springboks contre All Blacks — la rivalité qui arrête deux nations",
+    deckEn: "Barrett is out. The Springboks are favourites. But anyone who has watched this fixture knows that scorelines lie. Cape Town will be electric.",
+    deckFr: "Barrett est absent. Les Springboks sont favoris. Mais quiconque a regardé ce match sait que les scores mentent. Le Cap sera électrique.",
+  },
+  {
+    id: "o4", locationTag: "Diamond League · Athletics", flag: "🌍",
+    headlineEn: "Kipchoge is running tonight — and the world should watch",
+    headlineFr: "Kipchoge court ce soir — et le monde devrait regarder",
+    deckEn: "It is never just a race when Eliud Kipchoge runs. The greatest distance runner in history, confirmed for tonight's 5000m. History does not run on a schedule — but it is running tonight.",
+    deckFr: "Ce n'est jamais juste une course quand Eliud Kipchoge court. Le plus grand coureur de fond de l'histoire, confirmé pour le 5000m de ce soir.",
+  },
+  {
+    id: "o5", locationTag: "PSL · South Africa", flag: "🇿🇦",
     headlineEn: "Sundowns are becoming untouchable — and it should worry everyone",
     headlineFr: "Sundowns devient intouchable — et cela devrait inquiéter tout le monde",
-    deckEn: "Twelve games without defeat. A squad depth that rivals anything on the continent. Mamelodi Sundowns are not just winning — they are making winning look easy. Kaizer Chiefs arrive this Sunday as the latest side to discover what that means.",
-    deckFr: "Douze matches sans défaite. Une profondeur d'effectif qui rivalise avec n'importe qui sur le continent. Mamelodi Sundowns ne fait pas que gagner — ils rendent la victoire facile. Kaizer Chiefs arrive ce dimanche comme le dernier club à en faire l'expérience.",
-  },
-  {
-    id: "o4",
-    locationTag: "Botola Pro · Morocco",
-    flag: "🇲🇦",
-    headlineEn: "The Casablanca derby has only one rule: nothing is decided until it is over",
-    headlineFr: "Le derby de Casablanca n'a qu'une règle : rien n'est décidé avant la fin",
-    deckEn: "Wydad versus Raja is the kind of fixture that empties offices and fills hospital wards. Four draws in six meetings. The data says draw. The crowd says anything can happen.",
-    deckFr: "Wydad contre Raja est le genre de match qui vide les bureaux et remplit les salles d'urgence. Quatre nuls en six confrontations. Les données disent nul. Les supporters disent que tout peut arriver.",
-  },
-  {
-    id: "o5",
-    locationTag: "Ligue 1 CI · Côte d'Ivoire",
-    flag: "🇨🇮",
-    headlineEn: "ASEC Mimosas: the club that taught Abidjan to dream big",
-    headlineFr: "ASEC Mimosas : le club qui a appris à Abidjan à rêver grand",
-    deckEn: "They produced Yaya Touré, Didier Zokora, Emmanuel Eboué. Forty years later, ASEC's academy still produces the best footballers in the country. And this weekend, they face Africa Sports at home — a fixture that needs no introduction.",
-    deckFr: "Ils ont formé Yaya Touré, Didier Zokora, Emmanuel Eboué. Quarante ans plus tard, l'académie de l'ASEC produit toujours les meilleurs footballeurs du pays. Ce week-end, ils accueillent Africa Sports — un match qui ne nécessite aucune présentation.",
+    deckEn: "Twelve games without defeat. A squad depth that rivals anything on the continent. Mamelodi Sundowns are not just winning — they are making winning look easy.",
+    deckFr: "Douze matches sans défaite. Une profondeur d'effectif qui rivalise avec n'importe qui sur le continent. Mamelodi Sundowns ne fait pas que gagner — ils rendent la victoire facile.",
   },
 ];
 
 const FEATURED_ANALYSTS = [
-  { name: "James Adeyemi", winRate: 58, picks: 147, href: "#" },
-  { name: "Aminata Diallo", winRate: 62, picks: 89,  href: "#" },
-  { name: "Kwame Mensah",  winRate: 55, picks: 203, href: "#" },
+  {
+    name: "James Adeyemi", winRate: 58, picks: 147, href: "#",
+    signature: "Home form is everything in NPFL right now.",
+    last5: ["W", "W", "L", "W", "D"] as Array<"W"|"L"|"D">,
+  },
+  {
+    name: "Aminata Diallo", winRate: 62, picks: 89, href: "#",
+    signature: "The draw market in African derbies is consistently underpriced.",
+    last5: ["W", "L", "W", "W", "W"] as Array<"W"|"L"|"D">,
+  },
+  {
+    name: "Kwame Mensah", winRate: 55, picks: 203, href: "#",
+    signature: "xG tells you who should have won. Odds tell you who the market thought would.",
+    last5: ["W", "D", "L", "W", "W"] as Array<"W"|"L"|"D">,
+  },
 ];
 
-const SIDEBAR_TITLE: Record<string, string> = {
-  signal: "Verified analysts",
-  intel:  "Featured analysts",
-  origin: "African voices",
-};
-const SIDEBAR_TITLE_FR: Record<string, string> = {
-  signal: "Analystes vérifiés",
-  intel:  "Analystes vedettes",
-  origin: "Voix africaines",
-};
+const SIDEBAR_TITLE: Record<string, string>    = { signal: "Verified analysts",  intel: "Featured analysts", origin: "African voices" };
+const SIDEBAR_TITLE_FR: Record<string, string> = { signal: "Analystes vérifiés", intel: "Analystes vedettes",  origin: "Voix africaines" };
+
+// ── Page ──────────────────────────────────────────────────────
 
 export default function IntelligenceFeedPage() {
   const { locale } = useLanguage();
   const { freeReadsUsed, limit } = usePaywall("free");
+  void freeReadsUsed; void limit;
   const { activeMode } = useModeStore();
-  const [_selectedLeague, setSelectedLeague] = useState("all");
-  void setSelectedLeague;
+  const { activeSport } = useSportStore();
 
-  const sidebarTitle = locale === "fr"
-    ? SIDEBAR_TITLE_FR[activeMode]
-    : SIDEBAR_TITLE[activeMode];
+  const L = locale as "en" | "fr";
+
+  // Sport filtering helpers
+  function matchesSport(tags?: string[]): boolean {
+    if (activeSport === "all") return true;
+    return tags?.includes(activeSport) ?? false;
+  }
+
+  const filteredSignal = SEED_MATCHES.filter((m) => matchesSport(m.sportTags));
+  const firstCard      = filteredSignal[0] ?? null;
+  const restCards      = filteredSignal.slice(1);
+
+  const sidebarTitle = L === "fr" ? SIDEBAR_TITLE_FR[activeMode] : SIDEBAR_TITLE[activeMode];
 
   const sidebar = (
     <Sidebar>
+      <ScoresSidebar />
       <SidebarSection title={sidebarTitle}>
         {FEATURED_ANALYSTS.map((a) => (
           <AnalystCard key={a.name} {...a} />
@@ -226,35 +250,81 @@ export default function IntelligenceFeedPage() {
     </Sidebar>
   );
 
+  const emptyMsg = `No ${activeSport === "all" ? "" : activeSport + " "}briefings today — check back later or view all sports.`;
+
   return (
     <PageWrapper>
-      {/* Masthead + Mode shell — full width above the grid */}
-      <div className="border-b" style={{ borderColor: "#374151" }}>
-        <Masthead />
-        <ModeSelector />
-        <UVPZone locale={locale} />
-        <CounterBar locale={locale} />
+      {/* ── 1-3. Masthead (with sport pills) + Section header + Breaking banner ── */}
+      <Masthead />
+      <SectionHeader />
+      <BreakingBanner />
+
+      {/* ── 4. One free briefing card + 5. TrialSignup ── */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        {activeMode === "signal" && (
+          firstCard ? (
+            <div className="max-w-2xl mb-6">
+              <MatchBriefCard
+                match={firstCard}
+                index={0}
+                userTier="free"
+                locale={L}
+              />
+            </div>
+          ) : (
+            <p className="text-sm italic text-center py-4 mb-6" style={{ color: "#6B7280" }}>{emptyMsg}</p>
+          )
+        )}
+        {activeMode === "intel" && INTEL_CARDS.length > 0 && (
+          <div className="max-w-2xl mb-6">
+            <IntelCard card={INTEL_CARDS[0]} index={0} />
+          </div>
+        )}
+        {activeMode === "origin" && ORIGIN_CARDS.length > 0 && (
+          <div className="max-w-2xl mb-6">
+            <OriginCard card={ORIGIN_CARDS[0]} index={0} defaultLang={L} />
+          </div>
+        )}
       </div>
 
+      {/* ── 5. TrialSignup (replaces ModeSelector + UVPZone) ── */}
+      <TrialSignup locale={locale} />
+
+      {/* ── 6. CounterBar ── */}
+      <CounterBar locale={locale} />
+
+      {/* ── 7. Body grid — remaining cards + scores sidebar ── */}
       <PageShell sidebar={sidebar}>
-        <div className="space-y-4 max-w-2xl pt-6">
-          {activeMode === "signal" && SEED_MATCHES.map((match, i) => (
-            <MatchBriefCard
-              key={match.id}
-              match={match}
-              index={i}
-              userTier="free"
-              locale={locale as "en" | "fr"}
-            />
-          ))}
+        <div className="space-y-4">
+          {activeMode === "signal" && (
+            restCards.length > 0
+              ? restCards.map((match, i) => (
+                  <MatchBriefCard
+                    key={match.id}
+                    match={match}
+                    index={i + 1}
+                    userTier="free"
+                    locale={L}
+                  />
+                ))
+              : <p className="text-sm italic text-center py-8" style={{ color: "#6B7280" }}>{emptyMsg}</p>
+          )}
 
-          {activeMode === "intel" && INTEL_CARDS.map((card, i) => (
-            <IntelCard key={card.id} card={card} index={i} />
-          ))}
+          {activeMode === "intel" && (
+            INTEL_CARDS.slice(1).length > 0
+              ? INTEL_CARDS.slice(1).map((card, i) => (
+                  <IntelCard key={card.id} card={card} index={i + 1} />
+                ))
+              : <p className="text-sm italic text-center py-8" style={{ color: "#6B7280" }}>No intel briefings today.</p>
+          )}
 
-          {activeMode === "origin" && ORIGIN_CARDS.map((card, i) => (
-            <OriginCard key={card.id} card={card} index={i} defaultLang={locale as "en" | "fr"} />
-          ))}
+          {activeMode === "origin" && (
+            ORIGIN_CARDS.slice(1).length > 0
+              ? ORIGIN_CARDS.slice(1).map((card, i) => (
+                  <OriginCard key={card.id} card={card} index={i + 1} defaultLang={L} />
+                ))
+              : <p className="text-sm italic text-center py-8" style={{ color: "#6B7280" }}>No origin stories today.</p>
+          )}
         </div>
       </PageShell>
     </PageWrapper>

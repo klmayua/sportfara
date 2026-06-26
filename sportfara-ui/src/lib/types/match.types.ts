@@ -28,6 +28,7 @@ export interface MatchType {
   edgeScore?: number;
   status?: "LIVE" | "UPCOMING" | "FT";
   score?: string;
+  sportTags?: string[];
 }
 
 export interface BriefingEntry {

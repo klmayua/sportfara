@@ -1,0 +1,511 @@
+# ============================================================
+# SPORTFARA — UI/UX DELTA BUILD SPEC v3.0
+# ============================================================
+# PURPOSE:
+#   Extends v2.0. Replaces the pricing CTA zone entirely
+#   with a 7-day free trial signup flow. Adds sport-filtered
+#   feed. Adds ESPN-style scores sidebar. Adds Breaking banner.
+#   All existing components, colours, and tokens untouched.
+# ============================================================
+
+meta:
+  baseline_url: "https://sportfara.vercel.app/en"
+  replaces: "SPORTFARA_UIUX_DELTA_v2.yaml"
+  spec_type: "delta — additions and modifications only"
+  key_change: >
+    Pricing removed from conversion zone entirely.
+    Replaced with 7-day free trial signup form.
+    Product (one free briefing) shown BEFORE any CTA.
+    Mode selection moves into the signup form itself.
+
+# ============================================================
+# PRESERVED FROM v2 — DO NOT TOUCH
+# ============================================================
+
+preserved_from_v2:
+  - TickerBar component (Change 1 — complete)
+  - Masthead component (Change 2 — complete)
+  - CounterBar component (Change 5 — complete)
+  - SignalCard edge score addition (Change 6 — complete)
+  - IntelCard component (Change 6 — complete)
+  - OriginCard component (Change 6 — complete)
+  - AffiliatePanel component (Change 8 — complete)
+  - All design tokens and colour system
+  - All existing PWA infrastructure
+
+# ============================================================
+# CHANGE A — SPORT PILL SELECTOR (modify existing masthead)
+# ============================================================
+
+change_A_sport_pills:
+  type: MODIFY
+  location: "Inside Masthead component, below the subline"
+  component: SportPills
+  file: "components/shell/Masthead.tsx (extend)"
+
+  pills:
+    - { label: "All sports", key: "all", default: true }
+    - { label: "Football",   key: "football" }
+    - { label: "Athletics",  key: "athletics" }
+    - { label: "Rugby",      key: "rugby" }
+    - { label: "Basketball", key: "basketball" }
+    - { label: "Cricket",    key: "cricket" }
+    - { label: "Cycling",    key: "cycling" }
+    - { label: "Handball",   key: "handball" }
+    - { label: "Boxing",     key: "boxing" }
+
+  pill_style:
+    default:
+      border: "existing border"
+      color:  "existing muted text"
+      radius: pill
+    active:
+      border_color: accent_orange
+      text_color:   accent_orange
+
+  state:
+    store: "Zustand — sportStore { activeSport: string }"
+    default: "all"
+    on_change: >
+      Updates simultaneously:
+      1. Feed — shows sport-specific briefing cards
+      2. Section header label — "Today's intelligence · {sport}"
+      3. Breaking banner text — sport-specific breaking news
+      4. Sidebar scores panel — filters to selected sport
+
+  note: >
+    Sport pills are NOT tied to mode (Signal/Intel/Origin).
+    A Signal user can filter to Rugby. An Intel user can
+    filter to Athletics. Sport and Mode are independent axes.
+
+# ============================================================
+# CHANGE B — SECTION HEADER (new component)
+# ============================================================
+
+change_B_section_header:
+  type: NEW
+  component: SectionHeader
+  file: components/shell/SectionHeader.tsx
+  position: "Between Masthead and feed content. After sport pills."
+
+  layout:
+    padding: "10px 24px"
+    border_bottom: "existing border"
+    display: "flex, justify-between, align-items center"
+
+  left:
+    text: "Today's intelligence · {activeSport label}"
+    style: "existing xs uppercase letter-spacing muted"
+    reactive: true   # updates when sport pill changes
+
+  right:
+    component: LiveIndicator
+    elements:
+      - dot: "5px circle, #00C853, pulse animation"
+      - text: "Live · Odds updated {N} mins ago"
+      - style: "existing xs, #00C853, font-weight medium"
+
+# ============================================================
+# CHANGE C — BREAKING BANNER (new component)
+# ============================================================
+
+change_C_breaking_banner:
+  type: NEW
+  component: BreakingBanner
+  file: components/shell/BreakingBanner.tsx
+  position: "Below SectionHeader, above feed cards"
+
+  layout:
+    margin: "10px 24px 0"
+    border_left: "2px solid accent_orange"
+    border_radius: "0 existing-md existing-md 0"
+    padding: "7px 12px"
+    background: "existing darkest surface token"
+
+  elements:
+    label:
+      text: "Breaking"
+      style: "9px uppercase letter-spacing accent_orange font-weight-bold"
+    body:
+      style: "11px font-weight-medium white line-height 1.35"
+      reactive: true  # updates per sport selection
+
+  content_per_sport:
+    all:        "Enyimba goalkeeper ruled out 2hrs before kick-off — Edge score moves 6.1 → 8.4"
+    football:   "Arsenal down to 10 men — Chelsea live odds shortening"
+    athletics:  "Kipchoge confirmed for Diamond League tonight — race preview live"
+    rugby:      "All Blacks missing Barrett — Springboks edge score moves to 8.5"
+    basketball: "Embiid 38pts — 76ers win confirmed. BAL Lagos final Friday."
+    cricket:    "Afghanistan squad confirmed — 3 key spin bowlers in starting XI"
+    cycling:    "Biniam Girmay wins Stage 3 — first Eritrean to win two consecutive Vuelta stages"
+    handball:   "Morocco goalkeeper injury confirmed — Edge updated 6.8 → 7.6"
+    boxing:     "Ajose WBC ranking officially updated — full analysis live"
+
+  visibility: "only renders when breaking content exists for active sport"
+
+# ============================================================
+# CHANGE D — SPORT-FILTERED FEED (modify existing feed)
+# ============================================================
+
+change_D_sport_feed:
+  type: MODIFY
+  existing: "Feed content area"
+  change: >
+    Feed now renders cards filtered by activeSport.
+    When sport = 'all', existing behaviour unchanged.
+    When sport = specific, only cards tagged with that
+    sport in mode_relevance AND sport fields are shown.
+
+  supabase_query:
+    base: "existing /api/feed?mode={mode}"
+    add_param: "&sport={activeSport}"
+    filter: >
+      .contains('sport_tags', [activeSport])
+      — new sport_tags column on content_items table
+      — array of sport keys per briefing
+
+  new_db_field:
+    table: content_items
+    field: sport_tags
+    type: "text[] — array of sport keys"
+    example: '["football", "npfl"]'
+
+  empty_state:
+    message: "No {sport} briefings today — check back later or view all sports."
+    style: "existing sm italic muted, centred, padding 24px"
+
+# ============================================================
+# CHANGE E — ESPN SCORES SIDEBAR (replaces analyst-only sidebar)
+# ============================================================
+
+change_E_sidebar:
+  type: MODIFY
+  existing: "Sidebar with Featured Analysts panel only"
+  change: >
+    Sidebar gains two panels in new stacking order:
+    1. Live Scores panel (new, primary — ESPN-style)
+    2. Verified Analysts panel (existing, moved below)
+    Affiliate panel (from v2) remains Signal-mode-only, below analysts.
+
+  scores_panel:
+    component: ScoresSidebar
+    file: components/sidebar/ScoresSidebar.tsx
+
+    sport_tabs:
+      layout: "horizontal scroll, border-bottom existing"
+      tab_style:
+        default: "existing xs font-weight-medium muted, pb-2, border-bottom 2px transparent"
+        active:  "existing text-primary, border-bottom 2px accent_orange"
+      tabs: ["All", "Football", "Rugby", "Athletics", "NBA", "Cricket"]
+      note: "tabs filter independently from main sport pills"
+
+    score_item:
+      layout: "flex, justify-between, padding 8px 12px, border-bottom existing, hover bg-secondary"
+      left:
+        team_rows: "two rows — home team + score, away team + score"
+        team_style: "11px font-weight-medium text-primary"
+        score_style: "11px font-weight-medium text-primary"
+        league_row: "9px muted, league name + status"
+        status_live: "9px #00C853 font-weight-medium"
+        status_ft:   "9px muted"
+      right:
+        edge_score:
+          format: "{score}"
+          style:
+            gte_7_5: "#00C853 9px font-weight-bold"
+            gte_5_0: "existing signal_amber 9px font-weight-bold"
+            verified: "existing muted 9px — for completed matches"
+
+    data:
+      source: "Supabase realtime on matches table, filtered by sport"
+      fallback: "static seed data — never show empty sidebar"
+
+  analyst_panel:
+    change: "title still reactive to mode (Signal/Intel/Origin from v2)"
+    new_addition:
+      analyst_signature:
+        position: "below analyst name, above last 5 picks"
+        content: "one-line italic quote — analyst's signature view"
+        style: "10px italic muted line-height 1.3"
+        example: '"Home form is everything in NPFL right now."'
+      last_5_picks:
+        component: "5 coloured dots"
+        colours:
+          W: "#00C853"
+          L: "#FF1744"
+          D: "existing muted background"
+        size: "16px circle, 8px font"
+      track_record:
+        style: "existing xs muted"
+        format: "{N} picks · {pct}% win rate"
+
+# ============================================================
+# CHANGE F — TRIAL SIGNUP (replaces ModeSelector + UVP + CTA)
+# ============================================================
+
+change_F_trial_signup:
+  type: REPLACE
+  removes:
+    - "ModeSelector component (Change 3 from v2)"
+    - "UVPZone component (Change 4 from v2)"
+    - "Existing pricing CTAs"
+  note: >
+    The mode selector and UVP zone are REMOVED from their
+    current position above the feed. They are REPLACED by
+    the trial signup component. The product (one free briefing)
+    now appears BEFORE any mode/CTA content.
+
+  new_page_flow:
+    1: "Ticker"
+    2: "Navbar"
+    3: "Masthead + sport pills"
+    4: "SectionHeader"
+    5: "BreakingBanner"
+    6: "ONE free briefing card (Signal card, existing component)"
+    7: "TrialSignup component  ← NEW (was mode selector + CTA)"
+    8: "CounterBar"
+    9: "Body grid (feed continuation + scores sidebar)"
+
+  component: TrialSignup
+  file: components/conversion/TrialSignup.tsx
+
+  layout:
+    display: "grid, two columns, 1fr 1fr"
+    border: "existing border"
+    border_radius: "existing lg"
+    overflow: hidden
+    margin: "0 24px 16px"
+
+  left_panel:
+    background: "existing surface"
+    padding: "28px"
+    border_right: "existing border"
+    content: "mode-reactive — updates when user selects mode in right panel"
+
+    elements:
+      eyebrow:
+        text: "7-day free trial"
+        style: "existing xs uppercase letter-spacing muted"
+
+      headline_per_mode:
+        signal: "See the edge before you decide to pay for it."
+        intel:  "Try your briefing desk for 7 days. On us."
+        origin: "7 days fully connected to home. Free."
+
+      copy_per_mode:
+        signal:
+          p1: >
+            7 days of full Signal access — verified probabilities,
+            WHY reasoning, and best odds across every league and
+            every sport. No card. No commitment. No guessing.
+          p2: >
+            By Day 7, you will know exactly whether Signal changes
+            how you bet. Most people do not cancel.
+            Because the edge speaks for itself.
+        intel:
+          p1: >
+            Full Intel access — structured match intelligence,
+            T1-T3 sourced briefings, exportable data, and the
+            full archive across football, rugby, athletics and more.
+            No card. No commitment.
+          p2: >
+            By the end of the week, you will have filed smarter,
+            spoken more confidently on air, or published something
+            you could not have written without it.
+            That is when the decision becomes easy.
+        origin:
+          p1: >
+            Full Origin access — every African league, every global
+            tournament, in English and French.
+            No card. No commitment. Just 7 days of never missing a moment.
+          p2: >
+            The Springboks score. The NPFL result. Kipchoge's time.
+            Girmay's stage. All of it, before your city's media covers it.
+            Because you should not have to explain to people back home
+            what you missed.
+
+      trust_line_per_mode:
+        signal: "2,400 bettors in Nigeria and Kenya already have the edge. Join them."
+        intel:  "The briefing journalists in 8 African markets read before going on air."
+        origin: "14,000 Africans abroad who refuse to miss a moment."
+
+      proof_cards:
+        layout: "3 equal columns, gap 8px, margin-top 16px"
+        cards:
+          - { number: "7",    label: "days full access, completely free" }
+          - { number: "0",    label: "card details required to start" }
+          - { number: "12",   label: "sports covered from Day 1" }
+        card_style:
+          background: "existing darkest surface"
+          border_radius: "existing md"
+          padding: "8px 10px"
+          number: "existing md bold white"
+          label: "existing xs muted line-height 1.3"
+
+      trial_bullets:
+        items:
+          - "Full briefings across all leagues and sports"
+          - "Edge scores, WHY reasoning, odds comparison"
+          - "Cancel before Day 7 — pay nothing, ever"
+          - "After trial: from $5/month depending on your mode"
+        bullet_dot: "4px circle accent_orange"
+        style: "existing xs muted, gap 4px"
+
+  right_panel:
+    background: "existing page background"
+    padding: "28px"
+
+    mode_question:
+      text: "First, who are you?"
+      style: "existing sm font-weight-medium text-primary"
+      margin_bottom: "10px"
+
+    mode_options:
+      type: "radio card group — NOT the tab buttons from v2"
+      layout: "flex column, gap 6px"
+      option_card:
+        default:
+          border: "existing border"
+          border_radius: "existing md"
+          padding: "10px 12px"
+          background: "existing surface"
+        active:
+          border_color: "accent_orange"
+        radio_indicator:
+          size: "14px circle"
+          default: "existing border"
+          active: "accent_orange fill, white inner dot"
+
+      options:
+        - key: signal
+          name: "The serious bettor — Signal"
+          desc: "I want verified edge on every match before I place."
+          default: true
+        - key: intel
+          name: "The analyst or journalist — Intel"
+          desc: "I need structured, sourced intelligence before my deadline."
+        - key: origin
+          name: "The diaspora fan — Origin"
+          desc: "I want African sports coverage wherever I am, in EN or FR."
+
+      on_select: >
+        Updates left panel content (headline, copy, trust line)
+        via Zustand trialModeStore { selectedMode: string }
+
+    form_fields:
+      - row: [first_name, last_name]
+        first_name: { label: "First name", placeholder: "Kwame",    type: text }
+        last_name:  { label: "Last name",  placeholder: "Mensah",   type: text }
+      - email:
+          label:       "Email address"
+          placeholder: "you@email.com"
+          type:        email
+          required:    true
+      - country:
+          label: "Country"
+          type:  select
+          required: true
+          groups:
+            West Africa:    [Nigeria, Ghana, Senegal, Ivory Coast, Cameroon, DRC]
+            East Africa:    [Kenya, Uganda, Tanzania, Ethiopia, Eritrea]
+            Southern Africa:[South Africa, Zimbabwe, Zambia, Namibia]
+            North Africa:   [Morocco, Algeria, Tunisia, Egypt]
+            Diaspora:       [United Kingdom, United States, France, Canada, UAE, Other]
+
+    cta_button:
+      text_per_mode:
+        signal: "Get 7 days of edge — free"
+        intel:  "Start your 7-day briefing desk — free"
+        origin: "Stay connected for 7 days — free"
+      style: >
+        width 100%, accent_orange background, white text,
+        existing md font-weight-bold, existing md radius,
+        py-2.5, hover accent_orange_hover, transition fast
+
+    cta_note:
+      text: "No card needed. Cancel anytime before Day 7 and you pay nothing — ever. After trial, from $5/month."
+      style: "existing xs muted text-center line-height 1.5"
+      price_mention: "single line at bottom only — not in headline or CTA"
+
+    success_state:
+      trigger: "on form submit + Supabase insert success"
+      replaces: "form area"
+      elements:
+        icon: "ti-circle-check, #00C853, 32px"
+        headline_per_mode:
+          signal: "Your 7-day Signal trial is live."
+          intel:  "Your 7-day Intel trial is live."
+          origin: "Your 7-day Origin trial is live."
+        copy_per_mode:
+          signal: >
+            Check your inbox — your first edge briefing is on its way.
+            By tomorrow morning, you will know why 2,400 bettors
+            made this their daily process.
+          intel: >
+            Your first briefing lands in your inbox shortly.
+            Sourced, structured, and ready before your next deadline.
+          origin: >
+            Your first briefing is on its way — in English and French.
+            Everything from home, starting now.
+
+  supabase_integration:
+    on_submit:
+      table: trial_signups
+      fields:
+        - email (required)
+        - first_name
+        - last_name
+        - country
+        - selected_mode (signal|intel|origin)
+        - trial_start (timestamp)
+        - trial_end (trial_start + 7 days)
+        - source_sport (activeSport at time of signup)
+        - utm_source (from URL params if present)
+    post_insert:
+      - "trigger Supabase edge function: send Day 1 email"
+      - "create user account (Supabase auth, passwordless)"
+      - "set subscription status: trial"
+      - "set free_briefings_used: 0"
+      - "set preferred_mode: selected_mode"
+
+# ============================================================
+# CHANGE G — COUNTER BAR UPDATE (modify from v2)
+# ============================================================
+
+change_G_counter_update:
+  type: MODIFY
+  existing: "CounterBar from v2 Change 5"
+  change: >
+    During trial period, counter bar changes meaning.
+    Instead of free briefings remaining, it shows trial days remaining.
+
+  trial_user_text:
+    format: "Day {N} of your 7-day trial · {N_remaining} days remaining"
+    style: "existing sm font-weight-bold urgency_amber"
+
+  free_user_text: "existing behaviour unchanged"
+  paid_user: "hidden — existing behaviour"
+
+# ============================================================
+# QA — REGRESSION + NEW CHECKS
+# ============================================================
+
+qa:
+  regression:
+    - "All v2 checks pass"
+    - "Existing briefing card renders correctly above TrialSignup"
+    - "Paystack integration still functional for direct upgrade path"
+    - "EN/FR toggle still works"
+
+  new_checks:
+    - "Sport pill click updates feed + section header + breaking banner + sidebar simultaneously"
+    - "Mode selection in TrialSignup updates left panel copy instantly"
+    - "Form submit writes to trial_signups table in Supabase"
+    - "Form submit triggers Day 1 email edge function"
+    - "Success state renders per selected mode"
+    - "Trial counter bar shows for trial users, free briefing counter for non-trial free users"
+    - "Scores sidebar filters independently from main sport pills"
+    - "Analyst signature line and last-5-picks dots render in sidebar"
+    - "Breaking banner absent when no content for active sport"
+    - "TrialSignup not shown to already-subscribed users"
+
